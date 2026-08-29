@@ -1,0 +1,25 @@
+name: Keep FloraLink Supabase Awake
+
+on:
+  schedule:
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-health-endpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/health
+        env:
+          PRODUCTION_URL: ${{ secrets.PRODUCTION_URL }}
+        run: |
+          if [ -z "$PRODUCTION_URL" ]; then
+            echo "PRODUCTION_URL secret is not set. Skipping ping."
+            exit 0
+          fi
+          echo "Pinging $PRODUCTION_URL/api/health..."
+
+          # Use curl to hit the health endpoint, fail if HTTP status is >= 400
+          curl --fail --silent --show-error "$PRODUCTION_URL/api/health"
+
+          echo -e "\nPing successful."
