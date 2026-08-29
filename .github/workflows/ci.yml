@@ -6,7 +6,7 @@ on:
 
 env:
   NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-publishable-key
   SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role-key
   NEXT_PUBLIC_MAP_TILE_URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png
   NEXT_PUBLIC_MAP_ATTRIBUTION: OpenStreetMap contributors
