@@ -52,6 +52,11 @@ describe("TaxonSearchField", () => {
     }
 
     render(<Harness />);
+    expect(
+      screen.getByText(
+        "Search species by common or scientific name (e.g., Emerald Ash Borer).",
+      ),
+    ).toBeTruthy();
     fireEvent.change(screen.getByRole("combobox"), { target: { value: "oak" } });
 
     act(() => vi.advanceTimersByTime(TAXON_SEARCH_DEBOUNCE_MS - 1));

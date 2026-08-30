@@ -39,7 +39,7 @@ const verificationLocationSchema = z
     if (value.west >= value.east) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "West must be less than east; antimeridian boxes are unsupported.",
+        message: "West must be less than east. Antimeridian boxes are unsupported.",
         path: ["west"],
       });
     }

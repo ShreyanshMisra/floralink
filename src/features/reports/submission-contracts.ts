@@ -23,7 +23,7 @@ export const reportSubmissionSchema = z
     hostStatus: hostStatusSchema,
     notes: normalizedText(2_000),
     agentEvidenceSummary: normalizedText(1_000).nullable(),
-    verificationId: z.string().uuid().nullable(),
+    verificationId: z.string().uuid().nullable().optional().default(null),
     acknowledgedApproximateLocation: z.boolean(),
     humanAcknowledged: z.literal(true),
     media: stagedMediaSchema.nullable(),

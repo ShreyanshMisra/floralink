@@ -3,25 +3,39 @@
 import { useState } from "react";
 
 import { ensureAnonymousAuth } from "@/features/auth/ensure-anonymous-auth";
-import { reportDraftStore } from "@/features/reports/report-draft-store";
+import {
+  reportDraftStore,
+  useReportDraftStore,
+} from "@/features/reports/report-draft-store";
 
 export function ContributionButton() {
-  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
-    "idle",
-  );
+  const draft = useReportDraftStore((state) => state.draft);
+  const reviewOpen = useReportDraftStore((state) => state.reviewOpen);
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
 
   async function beginContribution() {
+    const state = reportDraftStore.getState();
+    if (state.draft) {
+      state.openReview();
+      setStatus("idle");
+      return;
+    }
+
     setStatus("loading");
     try {
       await ensureAnonymousAuth();
-      if (!reportDraftStore.getState().draft) {
-        reportDraftStore.getState().stageFromHuman();
-      }
-      setStatus("ready");
+      reportDraftStore.getState().stageFromHuman();
+      setStatus("idle");
     } catch {
       setStatus("error");
     }
   }
+
+  const label = draft
+    ? reviewOpen
+      ? "Draft Open"
+      : "Open Draft"
+    : "Report Manually";
 
   return (
     <div className="contribution-control">
@@ -29,20 +43,15 @@ export function ContributionButton() {
         type="button"
         className="contribution-button"
         onClick={beginContribution}
-        disabled={status === "loading" || status === "ready"}
+        disabled={status === "loading"}
+        aria-busy={status === "loading"}
       >
-        {status === "loading"
-          ? "Starting…"
-          : status === "ready"
-            ? "Draft open"
-            : "Report manually"}
+        {status === "loading" ? "Starting…" : label}
       </button>
       <span className="sr-only" aria-live="polite">
-        {status === "ready"
-          ? "Anonymous contribution session ready."
-          : status === "error"
-            ? "Could not start a contribution session."
-            : ""}
+        {status === "error"
+          ? "Could not start a contribution session."
+          : ""}
       </span>
       {status === "error" ? (
         <p className="contribution-error" role="alert">

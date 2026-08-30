@@ -85,7 +85,7 @@ describe("WebMCP staged review integration", () => {
     expect(await screen.findByText("Agent tools unavailable")).toBeVisible();
     expect(
       screen.getByText(
-        "Agent tools unavailable in this browser; manual reporting still works.",
+        "Agent tools unavailable in this browser. Manual reporting still works.",
       ),
     ).toBeVisible();
     expect(screen.getByRole("button", { name: "Report manually" })).toBeEnabled();

@@ -63,7 +63,7 @@ export const boundingBoxLocationSchema = boundingBoxLocationObjectSchema.superRe
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          "West must be less than east; antimeridian-crossing boxes are unsupported.",
+          "West must be less than east. Antimeridian-crossing boxes are unsupported.",
         path: ["west"],
       });
     }
@@ -100,7 +100,7 @@ export const sightingLocationSchema = z
       context.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          "West must be less than east; antimeridian-crossing boxes are unsupported.",
+          "West must be less than east. Antimeridian-crossing boxes are unsupported.",
         path: ["west"],
       });
     }

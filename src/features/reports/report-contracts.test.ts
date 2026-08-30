@@ -55,7 +55,7 @@ describe("sightingLocationSchema", () => {
       expect(reversed.error.flatten().fieldErrors).toMatchObject({
         south: ["South must be less than north."],
         west: [
-          "West must be less than east; antimeridian-crossing boxes are unsupported.",
+          "West must be less than east. Antimeridian-crossing boxes are unsupported.",
         ],
       });
     }

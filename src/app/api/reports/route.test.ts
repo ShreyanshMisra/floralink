@@ -106,7 +106,10 @@ describe("POST /api/reports", () => {
   });
 
   it("allows a human-reviewed unverified submission and leaves authority to the RPC", async () => {
-    const response = await POST(request(validBody({ verificationId: null })));
+    const { verificationId: _verificationId, ...bodyWithoutVerification } =
+      validBody();
+    void _verificationId;
+    const response = await POST(request(bodyWithoutVerification));
     expect(response.status).toBe(201);
     expect(rpc.mock.calls[0]?.[1]).toMatchObject({ submission: { verificationId: null } });
   });

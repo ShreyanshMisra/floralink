@@ -73,9 +73,11 @@ export function EvidencePhotoPicker({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {previewUrl ? <img className="processed-preview" src={previewUrl} alt="Processed evidence preview" /> : null}
       {draft.media ? (
-        <p className="field-note">
-          Ready: {draft.media.width}×{draft.media.height}, {(draft.media.sizeBytes / 1024).toFixed(0)} KB, metadata stripped.
-        </p>
+        <div className="media-badges" aria-label="Processed photo details">
+          <span>{draft.media.width}×{draft.media.height}</span>
+          <span>{(draft.media.sizeBytes / 1024).toFixed(0)} KB</span>
+          <span>Metadata Stripped</span>
+        </div>
       ) : null}
       <p className="field-note">{gps ? "Photo GPS was found." : "No usable photo GPS found."}</p>
       {gps && draft.location.mode === "unresolved" ? (

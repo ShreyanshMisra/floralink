@@ -81,7 +81,7 @@ export function TaxonSearchField({
     <div className="taxon-search">
       <label htmlFor={`${descriptionId}-input`}>Species guess</label>
       <p id={descriptionId} className="field-note">
-        Type at least two characters. Suggestions appear after a 400 ms pause.
+        Search species by common or scientific name (e.g., Emerald Ash Borer).
       </p>
       <input
         id={`${descriptionId}-input`}
@@ -120,7 +120,10 @@ export function TaxonSearchField({
               }}
             >
               <strong>{candidate.commonName ?? candidate.scientificName}</strong>
-              <span>{candidate.scientificName} · {candidate.rank ?? "unranked"}</span>
+              <span>
+                {candidate.commonName ? `${candidate.scientificName} · ` : ""}
+                {candidate.rank ?? "unranked"}
+              </span>
             </button>
           </li>
         ))}

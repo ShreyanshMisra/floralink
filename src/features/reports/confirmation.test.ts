@@ -34,6 +34,12 @@ describe("confirmation enablement", () => {
       authReady: true,
       humanAcknowledged: true,
       isSubmitting: false,
+      draft: { ...draft, verification: null },
+    })).toBe(true);
+    expect(canConfirmSighting({
+      authReady: true,
+      humanAcknowledged: true,
+      isSubmitting: false,
       draft: { ...draft, location: { mode: "unresolved", roughDescription: "near trail", reason: "missing_reference" } },
     })).toBe(false);
     expect(canConfirmSighting({

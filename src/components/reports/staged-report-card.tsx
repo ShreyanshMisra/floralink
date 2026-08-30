@@ -241,7 +241,9 @@ export function StagedReportCard({
         {draft.taxon ? (
           <div className="identity-summary">
             <strong>{draft.taxon.commonName ?? draft.taxon.scientificName}</strong>
-            <span className="scientific-name">{draft.taxon.scientificName}</span>
+            {draft.taxon.commonName ? (
+              <span className="scientific-name">{draft.taxon.scientificName}</span>
+            ) : null}
             <a href={draft.taxon.sourceUrl} target="_blank" rel="noreferrer">
               Taxonomy source
             </a>
@@ -274,7 +276,7 @@ export function StagedReportCard({
           />
         </label>
         <p id="confidence-help" className="field-note">
-          Optional confidence supplied by the observer or agent; it is separate from taxonomy matching.
+          Optional confidence supplied by the observer or agent. It is separate from taxonomy matching.
         </p>
       </fieldset>
 
@@ -306,7 +308,16 @@ export function StagedReportCard({
             </button>
           </>
         ) : (
-          <p className="warning-note">Regional status has not been verified.</p>
+          <>
+            <div className="status-badges">
+              <span>unknown</span>
+              <span>unknown urgency</span>
+            </div>
+            <p className="warning-note">
+              Regional status is unknown. You can still submit this sighting
+              after reviewing the required fields.
+            </p>
+          </>
         )}
       </section>
 
@@ -353,7 +364,7 @@ export function StagedReportCard({
             onChange={(event) => editFromHuman({ notes: event.target.value })}
           />
         </label>
-        <p id="notes-help" className="field-note">Optional field notes; do not include sensitive personal information.</p>
+        <p id="notes-help" className="field-note">Optional field notes. Do not include sensitive personal information.</p>
         <label>
           Evidence summary
           <textarea
@@ -365,7 +376,7 @@ export function StagedReportCard({
             }
           />
         </label>
-        <p id="evidence-summary-help" className="field-note">Optional visible-trait summary; this is not a photo upload.</p>
+        <p id="evidence-summary-help" className="field-note">Optional visible-trait summary. This is not a photo upload.</p>
       </fieldset>
 
       <section className="review-section" aria-labelledby="location-heading">
@@ -463,18 +474,25 @@ export function StagedReportCard({
         {submissionError?.stageId === draft.stageId ? (
           <p id="submission-error" className="warning-note" role="alert">{submissionError.message} Review the fields and try again.</p>
         ) : null}
-        <button
-          type="button"
-          className="confirm-button"
-          aria-describedby="confirmation-help submission-error auth-error"
-          disabled={!confirmEnabled || isDiscarding}
-          onClick={() => void submitReport()}
-        >
-          {isSubmitting ? "Submitting…" : "Confirm sighting"}
-        </button>
-        <button type="button" className="discard-button" disabled={isSubmitting || isDiscarding} onClick={() => void discardWithCleanup()}>
-          {isDiscarding ? "Discarding…" : "Discard draft"}
-        </button>
+        <div className="draft-action-buttons">
+          <button
+            type="button"
+            className="confirm-button"
+            aria-describedby="confirmation-help submission-error auth-error"
+            disabled={!confirmEnabled || isDiscarding}
+            onClick={() => void submitReport()}
+          >
+            {isSubmitting ? "Submitting…" : "Confirm sighting"}
+          </button>
+          <button
+            type="button"
+            className="discard-button"
+            disabled={isSubmitting || isDiscarding}
+            onClick={() => void discardWithCleanup()}
+          >
+            {isDiscarding ? "Discarding…" : "Discard draft"}
+          </button>
+        </div>
       </div>
     </section>
   );

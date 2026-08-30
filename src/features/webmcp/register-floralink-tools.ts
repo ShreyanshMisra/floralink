@@ -157,7 +157,7 @@ export async function registerFloraLinkTools({
     {
       name: "stage_sighting_report",
       description:
-        "Stage a sighting in FloraLink's visible local review UI. This never uploads media, confirms, persists, or submits a report; a person must review it.",
+        "Stage a sighting in FloraLink's visible local review UI. This never uploads media, confirms, persists, or submits a report. A person must review it.",
       inputSchema: webMcpToolSchemas.stage_sighting_report.input,
       outputSchema: webMcpToolSchemas.stage_sighting_report.output,
       annotations: { readOnlyHint: false, untrustedContentHint: true },
@@ -171,7 +171,7 @@ export async function registerFloraLinkTools({
             stageId: draft.stageId,
             revision: draft.revision,
             missingOrUncertainFields: getDraftValidationSummary(draft),
-            message: "Staged for human review; not submitted.",
+            message: "Staged for human review. Not submitted.",
           };
         } catch (error) {
           if (error instanceof DraftConflictError) {

@@ -16,7 +16,7 @@ export function WebMcpStatusBadge() {
       <span className={`webmcp-badge webmcp-${status}`}>{labels[status]}</span>
       {status === "unsupported" || status === "error" ? (
         <span className="webmcp-fallback">
-          Agent tools unavailable in this browser; manual reporting still works.
+          Agent tools unavailable in this browser. Manual reporting still works.
         </span>
       ) : null}
     </div>

@@ -30,3 +30,5 @@ coverage/
 docs
 AGENTS.md
 handoff.md
+.vercel
+.env*

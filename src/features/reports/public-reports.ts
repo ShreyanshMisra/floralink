@@ -19,7 +19,7 @@ export const viewportBoundsSchema = z
     if (bounds.west >= bounds.east) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "west must be less than east; antimeridian viewports are unsupported",
+        message: "west must be less than east. Antimeridian viewports are unsupported",
         path: ["west"],
       });
     }

@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(60);
+select plan(62);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values
@@ -345,6 +345,15 @@ select lives_ok(
     'media-stage-revision-1'
   )$$,
   'submission RPC transactionally attaches correctly owned media'
+);
+select is(
+  (select ecological_status::text from public.reports where raw_taxon_guess = 'media transactional report'),
+  'unknown',
+  'submission RPC defaults missing verification to unknown ecological status'
+);
+select ok(
+  (select verification_id is null from public.reports where raw_taxon_guess = 'media transactional report'),
+  'submission RPC accepts a missing verification id'
 );
 select throws_ok(
   $$select * from public.report_submission_receipts$$,

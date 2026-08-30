@@ -88,9 +88,9 @@ function statusWarning(status: EcologicalStatus, authorityName?: string) {
     case "invasive":
       return `A regional authority (${authorityName}) classifies this taxon as invasive.`;
     case "protected":
-      return "This taxon is protected regionally; location privacy and manual review apply.";
+      return "This taxon is protected regionally. Location privacy and manual review apply.";
     case "introduced":
-      return "This taxon is introduced regionally; introduced does not automatically mean invasive.";
+      return "This taxon is introduced regionally. Introduced does not automatically mean invasive.";
     case "unknown":
       return "Regional ecological status is not established in FloraLink's authority records.";
     case "native":
@@ -201,14 +201,14 @@ export async function verifyTaxon(
     warnings.unshift(ecologicalWarning);
   }
   if (request.hostStatus === "damaged" || request.hostStatus === "dead") {
-    warnings.push("Host impact was observed; this does not change the taxon's regional status.");
+    warnings.push("Host impact was observed. This does not change the taxon's regional status.");
   }
   if (
     request.identificationConfidence !== null &&
     request.identificationConfidence !== undefined &&
     request.identificationConfidence < 0.5
   ) {
-    warnings.push("Identification confidence is low; manual taxon review is recommended.");
+    warnings.push("Identification confidence is low. Manual taxon review is recommended.");
   }
 
   const sources: EcologicalVerification["sources"] = [

@@ -50,6 +50,7 @@ export interface ReportDraftState {
   editFromHuman: (patch: HumanDraftPatch) => void;
   setLocationEditMode: (mode: LocationEditMode) => void;
   handleMapLocationClick: (latitude: number, longitude: number) => void;
+  openReview: () => void;
   closeReview: () => void;
   clearSubmittedDraft: () => void;
   discardDraft: () => void;
@@ -125,7 +126,7 @@ export const reportDraftStore = createStore<ReportDraftState>()(
           stageId: createStageId(),
           revision: 1,
           taxon: null,
-          rawTaxonGuess: "Unidentified sighting",
+          rawTaxonGuess: "",
           identificationConfidence: null,
           location: {
             mode: "unresolved",
@@ -197,6 +198,13 @@ export const reportDraftStore = createStore<ReportDraftState>()(
         });
         set({ locationEditMode: "idle", locationEditAnchor: null });
       },
+      openReview: () =>
+        set((state) => ({
+          reviewOpen: Boolean(state.draft),
+          announcement: state.draft
+            ? "Draft opened for review"
+            : state.announcement,
+        })),
       closeReview: () => set({ reviewOpen: false, locationEditMode: "idle" }),
       clearSubmittedDraft: () =>
         set({

@@ -190,7 +190,7 @@ h2 {
 }
 
 .contribution-button:disabled {
-  cursor: wait;
+  cursor: not-allowed;
   opacity: 0.7;
 }
 
@@ -235,6 +235,7 @@ h2 {
 
 .feed-panel {
   padding: 1.25rem;
+  scrollbar-gutter: stable;
   border-top: 1px solid var(--line);
   background: var(--surface);
 }
@@ -246,9 +247,10 @@ h2 {
 
 .staged-card {
   display: grid;
+  min-width: 0;
   gap: 1rem;
   padding: 1rem;
-  margin: -0.25rem -0.25rem 1.25rem;
+  margin: 0 0 1.25rem;
   border: 2px solid #d9772f;
   border-radius: 1rem;
   background: #fffdf8;
@@ -260,12 +262,15 @@ h2 {
 }
 
 .staged-card-header,
-.draft-status-row,
-.draft-actions {
+.draft-status-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+}
+
+.staged-card-header > button {
+  flex: 0 0 auto;
 }
 
 .draft-status-row {
@@ -394,6 +399,22 @@ h2 {
   text-transform: capitalize;
 }
 
+.media-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.media-badges span {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid #b8cbbd;
+  border-radius: 999px;
+  background: #eef6f0;
+  color: #24513a;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
 .field-note,
 .warning-note,
 .location-summary,
@@ -515,7 +536,27 @@ h2 {
 }
 
 .draft-actions {
-  align-items: flex-start;
+  display: grid;
+  min-width: 0;
+  gap: 0.65rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.8rem;
+  background: #fffdf8;
+}
+
+.draft-action-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  width: 100%;
+  padding-top: 0.2rem;
+}
+
+.draft-action-buttons button {
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.65rem 0.8rem;
 }
 
 .feed-heading-row {
@@ -734,27 +775,18 @@ h2 {
     margin: 0 0 1rem;
   }
 
-  .staged-card .draft-actions {
-    position: sticky;
-    z-index: 2;
-    bottom: calc(-0.8rem - env(safe-area-inset-bottom));
-    padding: 0.85rem 0 calc(0.85rem + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--line);
-    background: #fffdf8;
-  }
-
-  .draft-actions .confirm-button,
-  .draft-actions .discard-button {
-    flex: 1 1 10rem;
-    min-height: 2.75rem;
-  }
-
   .leaflet-bottom {
     bottom: calc(8.5rem + env(safe-area-inset-bottom));
   }
 
   .map-and-feed:has(.staged-card) .leaflet-bottom {
     bottom: min(72dvh, calc(100dvh - 9rem));
+  }
+}
+
+@media (max-width: 30rem) {
+  .draft-action-buttons {
+    grid-template-columns: 1fr;
   }
 }
 
