@@ -7,6 +7,9 @@ const environmentSchema = z
     SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     NEXT_PUBLIC_MAP_TILE_URL: z.string().min(1),
     NEXT_PUBLIC_MAP_ATTRIBUTION: z.string().min(1),
+    INATURALIST_BASE_URL: z.string().url().default("https://api.inaturalist.org/v1"),
+    EXTERNAL_API_TIMEOUT_MS: z.literal("5000").default("5000"),
+    INATURALIST_CACHE_TTL_SECONDS: z.literal("86400").default("86400"),
   })
   .superRefine((values, context) => {
     const hasMapUrl = values.NEXT_PUBLIC_MAP_TILE_URL.length > 0;
@@ -28,6 +31,10 @@ const parsedEnvironment = environmentSchema.safeParse({
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
   NEXT_PUBLIC_MAP_TILE_URL: process.env.NEXT_PUBLIC_MAP_TILE_URL,
   NEXT_PUBLIC_MAP_ATTRIBUTION: process.env.NEXT_PUBLIC_MAP_ATTRIBUTION,
+  INATURALIST_BASE_URL: process.env.INATURALIST_BASE_URL,
+  EXTERNAL_API_TIMEOUT_MS: process.env.EXTERNAL_API_TIMEOUT_MS,
+  INATURALIST_CACHE_TTL_SECONDS:
+    process.env.INATURALIST_CACHE_TTL_SECONDS,
 });
 
 if (!parsedEnvironment.success) {

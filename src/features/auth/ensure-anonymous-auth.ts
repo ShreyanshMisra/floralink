@@ -16,16 +16,12 @@ export function ensureAnonymousAuth(): Promise<User> {
 
 async function authenticate(): Promise<User> {
   const supabase = createBrowserSupabaseClient();
-  const { data: sessionData, error: sessionError } =
-    await supabase.auth.getSession();
-
-  if (sessionError) {
-    throw new Error("Unable to check the contribution session.");
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user) {
+    return userData.user;
   }
 
-  if (sessionData.session?.user) {
-    return sessionData.session.user;
-  }
+  await supabase.auth.signOut({ scope: "local" });
 
   const { data, error } = await supabase.auth.signInAnonymously();
   if (error || !data.user) {

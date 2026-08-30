@@ -23,6 +23,7 @@ pnpm-debug.log*
 .vscode/
 
 # Tests
+tests
 coverage/
 
 # Agents

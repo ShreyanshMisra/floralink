@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(45);
+select plan(60);
 
 insert into auth.users (id, aud, role, email, created_at, updated_at)
 values
@@ -9,13 +9,16 @@ values
   ('22222222-2222-4222-8222-222222222222', 'authenticated', 'authenticated', 'other@example.test', now(), now());
 
 insert into public.verification_runs (
-  id, requested_guess, jurisdiction, state, retrieved_at
+  id, requested_guess, jurisdiction, state, ecological_status, sensitivity_level, urgency, retrieved_at
 )
 values (
   'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0',
   'emerald ash borer',
   'US-MA',
   'verified',
+  'invasive',
+  'rounded_public',
+  'priority',
   now()
 );
 
@@ -75,6 +78,24 @@ select ok((select relrowsecurity from pg_class where oid = 'public.regional_taxo
 select is((select public from storage.buckets where id = 'sighting-media'), false, 'media bucket is private');
 select is((select file_size_limit from storage.buckets where id = 'sighting-media'), 3145728::bigint, 'media bucket has a 3 MiB limit');
 select is((select allowed_mime_types from storage.buckets where id = 'sighting-media'), array['image/jpeg', 'image/png', 'image/webp']::text[], 'media bucket restricts MIME types');
+select is(
+  (select status::text from public.regional_taxon_status where jurisdiction = 'US-MA' and inaturalist_taxon_id = '70057'),
+  'invasive',
+  'emerald ash borer has a sourced Massachusetts invasive status'
+);
+select is(
+  (select status::text from public.regional_taxon_status where jurisdiction = 'US-MA' and inaturalist_taxon_id = '324726'),
+  'invasive',
+  'spotted lanternfly has a sourced Massachusetts invasive status'
+);
+select ok(
+  (select authority_url ~ '^https://' from public.regional_taxon_status where jurisdiction = 'US-MA' and inaturalist_taxon_id = '70057'),
+  'emerald ash borer authority URL uses HTTPS'
+);
+select ok(
+  (select authority_url ~ '^https://' from public.regional_taxon_status where jurisdiction = 'US-MA' and inaturalist_taxon_id = '324726'),
+  'spotted lanternfly authority URL uses HTTPS'
+);
 
 set local role anon;
 select throws_ok('select * from public.reports', '42501', null, 'anon cannot select exact reports');
@@ -226,6 +247,108 @@ select results_eq(
   $$select count(*) from storage.objects where bucket_id = 'sighting-media'$$,
   array[2::bigint],
   'service role can select all storage objects'
+);
+reset role;
+
+select ok((select relrowsecurity from pg_class where oid = 'public.report_submission_receipts'::regclass), 'submission receipts have RLS enabled');
+
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+select throws_ok(
+  $$select public.submit_sighting_report('{}'::jsonb, null, 'anon-attempt')$$,
+  '42501', null, 'anon cannot execute the human submission RPC'
+);
+reset role;
+
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"11111111-1111-4111-8111-111111111111","role":"authenticated"}', true);
+create temporary table first_receipt as
+select public.submit_sighting_report(
+  jsonb_build_object(
+    'stageId', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+    'rawTaxonGuess', 'transactional report',
+    'taxon', jsonb_build_object('scientificName', 'Agrilus planipennis', 'commonName', 'Emerald ash borer', 'rank', 'species', 'inaturalistTaxonId', '70057'),
+    'identificationConfidence', 0.9,
+    'observedAt', (now() - interval '1 hour')::text,
+    'location', jsonb_build_object('mode', 'point', 'latitude', 42.36, 'longitude', -71.06, 'accuracyMeters', 10, 'source', 'manual_pin'),
+    'hostStatus', 'damaged',
+    'notes', '',
+    'agentEvidenceSummary', null,
+    'verificationId', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0'
+  ),
+  null,
+  'owner-stage-revision-1'
+) as receipt;
+select ok((select receipt->>'reportId' is not null from first_receipt), 'submission RPC returns a report receipt');
+select is(
+  (select public.submit_sighting_report(
+    jsonb_build_object(
+      'stageId', 'cccccccc-cccc-4ccc-8ccc-cccccccccccc',
+      'rawTaxonGuess', 'transactional report',
+      'observedAt', (now() - interval '1 hour')::text,
+      'location', jsonb_build_object('mode', 'point', 'latitude', 42.36, 'longitude', -71.06, 'accuracyMeters', 10, 'source', 'manual_pin'),
+      'hostStatus', 'damaged',
+      'verificationId', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0'
+    ), null, 'owner-stage-revision-1'
+  )),
+  (select receipt from first_receipt),
+  'duplicate idempotency key returns the original receipt'
+);
+select results_eq(
+  $$select count(*) from public.reports where raw_taxon_guess = 'transactional report'$$,
+  array[1::bigint],
+  'double submission persists exactly one report'
+);
+select is(
+  (select ecological_status::text from public.reports where raw_taxon_guess = 'transactional report'),
+  'invasive',
+  'submission reloads authoritative ecological status from verification'
+);
+select throws_ok(
+  $$select public.submit_sighting_report(
+    jsonb_build_object('stageId', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'rawTaxonGuess', 'unresolved', 'observedAt', now()::text, 'location', jsonb_build_object('mode', 'unresolved'), 'hostStatus', 'unknown'),
+    null, 'unresolved-attempt'
+  )$$,
+  '22023', null, 'submission RPC rejects unresolved location'
+);
+select throws_ok(
+  $$select public.submit_sighting_report(
+    jsonb_build_object('stageId', 'dddddddd-dddd-4ddd-8ddd-dddddddddddd', 'rawTaxonGuess', 'wrong media', 'observedAt', now()::text, 'location', jsonb_build_object('mode', 'point', 'latitude', 42, 'longitude', -71, 'source', 'manual_pin'), 'hostStatus', 'unknown'),
+    jsonb_build_object('storagePath', '22222222-2222-4222-8222-222222222222/dddddddd-dddd-4ddd-8ddd-dddddddddddd/photo.jpg', 'mimeType', 'image/jpeg', 'sizeBytes', 100, 'width', 10, 'height', 10),
+    'wrong-media-attempt'
+  )$$,
+  '42501', null, 'submission RPC rejects wrong-user media paths'
+);
+select lives_ok(
+  $$insert into storage.objects (bucket_id, name, owner_id, metadata)
+    values (
+      'sighting-media',
+      '11111111-1111-4111-8111-111111111111/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee/ffffffff-ffff-4fff-8fff-ffffffffffff.webp',
+      auth.uid()::text,
+      '{"mimetype":"image/webp","size":512}'::jsonb
+    )$$,
+  'owner can stage a media object for transactional submission'
+);
+select lives_ok(
+  $$select public.submit_sighting_report(
+    jsonb_build_object(
+      'stageId', 'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee',
+      'rawTaxonGuess', 'media transactional report',
+      'observedAt', (now() - interval '1 hour')::text,
+      'location', jsonb_build_object('mode', 'point', 'latitude', 42.37, 'longitude', -71.07, 'source', 'manual_pin'),
+      'hostStatus', 'damaged'
+    ),
+    jsonb_build_object(
+      'storagePath', '11111111-1111-4111-8111-111111111111/eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee/ffffffff-ffff-4fff-8fff-ffffffffffff.webp',
+      'mimeType', 'image/webp', 'sizeBytes', 512, 'width', 25, 'height', 41
+    ),
+    'media-stage-revision-1'
+  )$$,
+  'submission RPC transactionally attaches correctly owned media'
+);
+select throws_ok(
+  $$select * from public.report_submission_receipts$$,
+  '42501', null, 'receipt rows remain inaccessible through authenticated table reads'
 );
 reset role;
 

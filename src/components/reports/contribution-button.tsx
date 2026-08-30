@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { ensureAnonymousAuth } from "@/features/auth/ensure-anonymous-auth";
+import { reportDraftStore } from "@/features/reports/report-draft-store";
 
 export function ContributionButton() {
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">(
@@ -13,6 +14,9 @@ export function ContributionButton() {
     setStatus("loading");
     try {
       await ensureAnonymousAuth();
+      if (!reportDraftStore.getState().draft) {
+        reportDraftStore.getState().stageFromHuman();
+      }
       setStatus("ready");
     } catch {
       setStatus("error");
@@ -30,7 +34,7 @@ export function ContributionButton() {
         {status === "loading"
           ? "Starting…"
           : status === "ready"
-            ? "Contribution ready"
+            ? "Draft open"
             : "Report manually"}
       </button>
       <span className="sr-only" aria-live="polite">
@@ -40,6 +44,11 @@ export function ContributionButton() {
             ? "Could not start a contribution session."
             : ""}
       </span>
+      {status === "error" ? (
+        <p className="contribution-error" role="alert">
+          Could not start a contribution session. Check your connection and try again.
+        </p>
+      ) : null}
     </div>
   );
 }

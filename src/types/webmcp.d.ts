@@ -8,6 +8,7 @@ interface WebMcpToolDefinition {
   name: string;
   description: string;
   inputSchema: WebMcpJsonSchema;
+  outputSchema?: WebMcpJsonSchema;
   annotations?: Record<string, boolean>;
   execute: (
     input: unknown,

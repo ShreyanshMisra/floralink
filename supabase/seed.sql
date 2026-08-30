@@ -1,5 +1,5 @@
 -- Sourced Massachusetts pilot fixture. The authority classifies emerald ash borer
--- as an invasive pest established in Massachusetts; checked 2026-08-28.
+-- as an invasive pest established in Massachusetts; checked 2026-08-29.
 insert into public.regional_taxon_status (
   jurisdiction,
   scientific_name,
@@ -23,7 +23,7 @@ values (
   'https://www.mass.gov/guides/emerald-ash-borer-in-massachusetts',
   'emerald-ash-borer',
   null,
-  '2026-08-28T00:00:00Z',
+  '2026-08-29T00:00:00Z',
   'Massachusetts DCR identifies emerald ash borer as an invasive pest first detected in the state in 2012.'
 )
 on conflict (jurisdiction, scientific_name, inaturalist_taxon_id, authority_name)
