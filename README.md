@@ -6,6 +6,8 @@ FloraLink is a WebMCP-powered biodiversity reporting app. A browsing agent turns
 
 The Massachusetts-focused MVP combines iNaturalist taxonomy lookup, sourced regional context, a Leaflet map, and private photo handling. It preserves uncertainty instead of inventing a species or precise location.
 
+<img width="1885" height="991" alt="Screenshot 2026-11-13 at 2 41 28 PM" src="https://github.com/user-attachments/assets/90bb14ec-de3c-440a-aff2-82828f3b840f" />
+
 ## Why
 
 Field observations are messy. They can be as vague as "saw some shiny green beetles on the ash trees by the trail this morning." Turning that into usable ecological data involves:
