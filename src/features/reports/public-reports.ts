@@ -33,6 +33,39 @@ export const viewportBoundsSchema = z
     }
   });
 
+export const MAX_VIEWPORT_SPAN_DEGREES = 10;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function clampSpan(low: number, high: number, min: number, max: number) {
+  const span = high - low;
+  if (span <= MAX_VIEWPORT_SPAN_DEGREES) {
+    return [clamp(low, min, max), clamp(high, min, max)] as const;
+  }
+  const center = (low + high) / 2;
+  const half = MAX_VIEWPORT_SPAN_DEGREES / 2;
+  return [clamp(center - half, min, max), clamp(center + half, min, max)] as const;
+}
+
+/**
+ * Converts a raw map viewport into one the public reports API accepts.
+ * Returns null when the map has not been laid out yet (zero-size bounds),
+ * so callers can wait for the next resize instead of sending a bad request.
+ * Oversized or wrapped viewports are clamped to a window around their center.
+ */
+export function toQueryableViewport(bounds: ViewportBounds): ViewportBounds | null {
+  const values = [bounds.south, bounds.west, bounds.north, bounds.east];
+  if (!values.every(Number.isFinite)) return null;
+  if (bounds.south >= bounds.north || bounds.west >= bounds.east) return null;
+
+  const [south, north] = clampSpan(bounds.south, bounds.north, -90, 90);
+  const [west, east] = clampSpan(bounds.west, bounds.east, -180, 180);
+  if (south >= north || west >= east) return null;
+  return { south, west, north, east };
+}
+
 const pointGeoJsonSchema = z.object({
   type: z.literal("Point"),
   coordinates: z.tuple([z.number(), z.number()]),

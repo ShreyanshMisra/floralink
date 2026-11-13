@@ -2,6 +2,12 @@ import { randomUUID } from "node:crypto";
 
 import { NextRequest, NextResponse } from "next/server";
 
+import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  rateLimitedResponse,
+  rateLimitPolicies,
+} from "@/lib/rate-limit";
 import { taxonSearchQuerySchema } from "@/features/taxonomy/contracts";
 import {
   createInaturalistAdapter,
@@ -10,6 +16,13 @@ import {
 
 export async function GET(request: NextRequest) {
   const requestId = randomUUID();
+
+  const rateLimit = checkRateLimit(
+    rateLimitPolicies.taxaSearch,
+    clientKeyFromRequest(request),
+  );
+  if (!rateLimit.allowed) return rateLimitedResponse(requestId, rateLimit);
+
   const searchParams = request.nextUrl.searchParams;
   const parsedQuery = taxonSearchQuerySchema.safeParse({
     q: searchParams.get("q") ?? undefined,

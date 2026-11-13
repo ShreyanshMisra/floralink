@@ -34,6 +34,7 @@ vi.mock("@/lib/supabase-server", () => ({
 }));
 
 import { POST } from "@/app/api/reports/route";
+import { resetRateLimits } from "@/lib/rate-limit";
 
 function validBody(overrides: Record<string, unknown> = {}) {
   return {
@@ -67,6 +68,17 @@ describe("POST /api/reports", () => {
   beforeEach(() => {
     persisted = null;
     rpc.mockClear();
+    resetRateLimits();
+  });
+
+  it("returns 429 with Retry-After once a client exceeds the submission limit", async () => {
+    let response: Response | undefined;
+    for (let attempt = 0; attempt < 11; attempt += 1) {
+      response = await POST(request(validBody(), `stage-revision-${attempt}`));
+    }
+    expect(response?.status).toBe(429);
+    expect(response?.headers.get("Retry-After")).toMatch(/^\d+$/);
+    expect(rpc).toHaveBeenCalledTimes(10);
   });
 
   it("persists a valid human-reviewed report and returns its receipt", async () => {

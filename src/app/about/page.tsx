@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "About | FloraLink" };
+export const metadata = { title: "About" };
 
 export default function AboutPage() {
   return (

@@ -12,7 +12,10 @@ import {
   useMapEvents,
 } from "react-leaflet";
 
-import type { PublicReport } from "@/features/reports/public-reports";
+import {
+  toQueryableViewport,
+  type PublicReport,
+} from "@/features/reports/public-reports";
 import { StagedLocationLayer } from "@/components/map/staged-location-layer";
 import { StagedReportCard } from "@/components/reports/staged-report-card";
 import { SubmissionReceiptCard } from "@/components/reports/submission-receipt-card";
@@ -64,16 +67,29 @@ function ViewportLoader({
 
     timerRef.current = setTimeout(async () => {
       const bounds = map.getBounds();
+      const viewport = toQueryableViewport({
+        south: bounds.getSouth(),
+        west: bounds.getWest(),
+        north: bounds.getNorth(),
+        east: bounds.getEast(),
+      });
+      if (!viewport) {
+        // The map has no size yet. invalidateSize() fires moveend once the
+        // container is laid out, which schedules another load.
+        map.invalidateSize();
+        return;
+      }
+
       const controller = new AbortController();
       requestRef.current = controller;
       onLoading(true);
       onError(null);
 
       const params = new URLSearchParams({
-        south: String(bounds.getSouth()),
-        west: String(bounds.getWest()),
-        north: String(bounds.getNorth()),
-        east: String(bounds.getEast()),
+        south: String(viewport.south),
+        west: String(viewport.west),
+        north: String(viewport.north),
+        east: String(viewport.east),
       });
 
       try {
@@ -96,7 +112,7 @@ function ViewportLoader({
     }, 400);
   }, [map, onError, onLoading, onReports]);
 
-  useMapEvents({ moveend: scheduleLoad });
+  useMapEvents({ moveend: scheduleLoad, resize: scheduleLoad });
 
   useEffect(() => {
     scheduleLoad();

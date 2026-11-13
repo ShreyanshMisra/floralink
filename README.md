@@ -6,6 +6,18 @@ FloraLink is a WebMCP-powered biodiversity reporting app. A browsing agent turns
 
 The Massachusetts-focused MVP combines iNaturalist taxonomy lookup, sourced regional context, a Leaflet map, and private photo handling. It preserves uncertainty instead of inventing a species or precise location.
 
+## Why
+
+Field observations are messy. They can be as vague as "saw some shiny green beetles on the ash trees by the trail this morning." Turning that into usable ecological data involves:
+
+- Resolving a taxon
+- Checking its regional status
+- Pinning a location
+- Attaching evidence
+
+An LLM agent is good at the first three. But letting it write directly to a public scientific dataset invites made-up species and false-precision coordinates. FloraLink splits the work so the agent does the research and drafting, and a person stays the only one who can publish.
+
+
 ## WebMCP implementation
 
 The five direct `document.modelContext.registerTool(...)` bindings are in [`src/features/webmcp/register-floralink-tools.ts`](https://github.com/ShreyanshMisra/floralink/blob/main/src/features/webmcp/register-floralink-tools.ts).

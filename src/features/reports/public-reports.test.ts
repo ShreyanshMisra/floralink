@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   sanitizeViewportRows,
+  toQueryableViewport,
   viewportBoundsSchema,
 } from "./public-reports";
 
@@ -78,5 +79,29 @@ describe("public viewport reports", () => {
     }));
 
     expect(() => sanitizeViewportRows(rows)).toThrow();
+  });
+});
+
+describe("toQueryableViewport", () => {
+  it("returns null for a zero-size viewport before the map is laid out", () => {
+    expect(
+      toQueryableViewport({ south: 42.35, west: -72.07, north: 42.35, east: -70.04 }),
+    ).toBeNull();
+  });
+
+  it("passes a normal viewport through unchanged", () => {
+    const bounds = { south: 41.2, west: -73.5, north: 42.9, east: -69.9 };
+    expect(toQueryableViewport(bounds)).toEqual(bounds);
+  });
+
+  it("clamps an oversized viewport to an accepted window around its center", () => {
+    const viewport = toQueryableViewport({ south: 20, west: -100, north: 60, east: -40 });
+    expect(viewport).toEqual({ south: 35, west: -75, north: 45, east: -65 });
+    expect(viewportBoundsSchema.safeParse(viewport).success).toBe(true);
+  });
+
+  it("clamps wrapped longitudes into the valid range", () => {
+    const viewport = toQueryableViewport({ south: 10, west: -184, north: 12, east: -178 });
+    expect(viewport).toEqual({ south: 10, west: -180, north: 12, east: -178 });
   });
 });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const metadata = { title: "Privacy | FloraLink" };
+export const metadata = { title: "Privacy" };
 
 export default function PrivacyPage() {
   return (

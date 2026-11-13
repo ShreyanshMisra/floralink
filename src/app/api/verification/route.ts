@@ -3,6 +3,12 @@ import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  rateLimitedResponse,
+  rateLimitPolicies,
+} from "@/lib/rate-limit";
+import {
   createInaturalistAdapter,
   InaturalistUnavailableError,
 } from "@/features/taxonomy/inaturalist";
@@ -16,6 +22,13 @@ import {
 
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();
+
+  const rateLimit = checkRateLimit(
+    rateLimitPolicies.verification,
+    clientKeyFromRequest(request),
+  );
+  if (!rateLimit.allowed) return rateLimitedResponse(requestId, rateLimit);
+
   let body: unknown;
 
   try {

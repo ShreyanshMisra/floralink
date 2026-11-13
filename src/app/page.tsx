@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { FloraMapShell } from "@/components/map/flora-map-shell";
 import { ContributionButton } from "@/components/reports/contribution-button";
 import { DraftAnnouncement } from "@/components/reports/staged-report-card";
@@ -25,4 +27,3 @@ export default function Home() {
     </main>
   );
 }
-import Link from "next/link";

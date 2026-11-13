@@ -3,6 +3,12 @@ import { randomUUID } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
+  checkRateLimit,
+  clientKeyFromRequest,
+  rateLimitedResponse,
+  rateLimitPolicies,
+} from "@/lib/rate-limit";
+import {
   sanitizeViewportRows,
   viewportBoundsSchema,
 } from "@/features/reports/public-reports";
@@ -28,6 +34,13 @@ function failure(
 
 export async function POST(request: NextRequest) {
   const requestId = randomUUID();
+
+  const rateLimit = checkRateLimit(
+    rateLimitPolicies.submitReport,
+    clientKeyFromRequest(request),
+  );
+  if (!rateLimit.allowed) return rateLimitedResponse(requestId, rateLimit);
+
   const idempotencyKey = request.headers.get("Idempotency-Key")?.trim();
   if (!idempotencyKey || idempotencyKey.length < 8 || idempotencyKey.length > 200) {
     return failure(requestId, 400, "INVALID_IDEMPOTENCY_KEY", "Provide a valid Idempotency-Key header.");
